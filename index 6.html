@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macro Quest: Rescue Princess Donut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #101c30;
+    --bg-2: #16273f;
+    --surface: #1c2f4c;
+    --surface-2: #24395a;
+    --border: #33496e;
+    --text: #f2f6fb;
+    --muted: #93a8c9;
+    --gold: #ffb627;
+    --gold-deep: #e69a0c;
+    --good: #47d18c;
+    --bad: #ff6f6f;
+    --carb: #7bd0ff;
+    --lipid: #ffb627;
+    --protein: #ff9466;
+    --nucleic: #b98cff;
+    --radius: 18px;
+    --shadow: 0 12px 30px rgba(4,10,20,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1100px 600px at 12% -10%, #1e3358 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #24304f 0%, transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', system-ui, sans-serif;
+    min-height:100vh;
+    padding:20px 14px 48px;
+  }
+  h1,h2,h3{ font-family:'Baloo 2', system-ui, sans-serif; }
+  .wrap{ max-width:760px; margin:0 auto; }
+
+  /* ---------- top bar ---------- */
+  .shelf{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:12px 16px; margin-bottom:16px; box-shadow:var(--shadow); flex-wrap:wrap;
+  }
+  .shelf-trophies{ display:flex; gap:8px; flex:1; overflow-x:auto; scrollbar-width:none; min-width:120px; }
+  .shelf-trophies::-webkit-scrollbar{display:none;}
+  .medal{
+    width:34px;height:34px; border-radius:50%; display:flex;align-items:center;justify-content:center;
+    font-size:16px; background:var(--bg-2); border:2px solid var(--border);
+    filter:grayscale(1) opacity(0.45); flex:none;
+    transition:transform .25s ease, filter .25s ease, box-shadow .25s ease;
+  }
+  .medal.unlocked{ filter:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(255,182,39,0.18); }
+  .medal.pop{ animation:pop .5s ease; }
+  @keyframes pop{
+    0%{transform:scale(1);} 35%{transform:scale(1.35) rotate(-6deg);}
+    70%{transform:scale(0.95) rotate(4deg);} 100%{transform:scale(1);}
+  }
+  .shelf-right{ display:flex; align-items:center; gap:12px; flex:none; }
+  .lives{ font-size:15px; letter-spacing:2px; }
+  .score-box{ text-align:right; }
+  .score-box .num{ font-family:'Baloo 2', sans-serif; font-size:21px; font-weight:700; color:var(--gold); line-height:1; }
+  .score-box .lab{ font-size:10px; color:var(--muted); margin-top:2px; }
+  .mute-btn{
+    background:var(--surface-2); border:1px solid var(--border); color:var(--text); width:32px;height:32px;
+    border-radius:50%; font-size:14px; cursor:pointer; flex:none; display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ---------- screens ---------- */
+  .screen{ display:none; }
+  .screen.active{ display:block; }
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
+
+  /* ---------- start screen ---------- */
+  #startScreen .card{ padding:32px 26px; text-align:center; }
+  .kicker{ color:var(--gold); font-size:14px; font-weight:600; letter-spacing:0.02em; margin-bottom:6px; }
+  #startScreen h1{ font-size:clamp(24px,6vw,36px); margin:0 0 10px; line-height:1.1; }
+  #startScreen p.sub{ color:var(--muted); font-size:15px; max-width:480px; margin:0 auto 18px; line-height:1.5; }
+  .donut-hero{ width:110px; height:110px; margin:0 auto 10px; }
+  .donut-hero svg{ width:100%; height:100%; display:block; }
+  .cat-row{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+  .cat-chip{
+    font-size:13px; font-weight:600; padding:6px 13px 6px 6px; border-radius:100px; border:1px solid var(--border);
+    display:flex;align-items:center;gap:7px;
+  }
+  .cat-chip .mini-creature{ width:22px; height:22px; flex:none; }
+  .goal-row{ margin-bottom:18px; }
+  .goal-row label{ font-size:12.5px; color:var(--muted); display:block; margin-bottom:8px; }
+  .goal-pick{ display:flex; justify-content:center; gap:8px; }
+  .goal-btn{
+    border:1px solid var(--border); background:var(--bg-2); color:var(--text); border-radius:10px;
+    padding:8px 16px; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; cursor:pointer;
+  }
+  .goal-btn.active{ background:var(--gold); color:#12213a; border-color:var(--gold-deep); }
+  .best-note{ font-size:12px; color:var(--muted); margin-bottom:16px; }
+  input#nameInput{
+    width:100%; max-width:280px; padding:12px 14px; border-radius:12px; border:1px solid var(--border);
+    background:var(--bg-2); color:var(--text); font-size:15px; font-family:inherit; margin-bottom:18px; text-align:center;
+  }
+  input#nameInput::placeholder{ color:var(--muted); }
+  .btn{
+    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:17px; border:none; border-radius:14px;
+    padding:14px 28px; cursor:pointer; color:#12213a; background:var(--gold);
+    box-shadow:0 8px 0 var(--gold-deep); transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:active{ transform:translateY(6px); box-shadow:0 2px 0 var(--gold-deep); }
+  .btn.secondary{ background:var(--surface-2); color:var(--text); box-shadow:0 8px 0 #16233a; }
+  .btn.secondary:active{ box-shadow:0 2px 0 #16233a; }
+  .btn.small{ font-size:14px; padding:10px 18px; box-shadow:0 6px 0 var(--gold-deep); }
+  .btn.small:active{ box-shadow:0 2px 0 var(--gold-deep); }
+
+  /* ---------- creatures ---------- */
+  .creature-avatar{
+    width:56px; height:56px; border-radius:50%; background:var(--bg-2); border:2px solid var(--border);
+    display:flex; align-items:center; justify-content:center; padding:5px; flex:none;
+  }
+  .creature-avatar svg{ width:100%; height:100%; display:block; }
+  .q-top-left{ display:flex; align-items:center; gap:10px; }
+  .creature-name{ font-size:11px; color:var(--muted); margin-top:4px; }
+
+  /* ---------- rescue track ---------- */
+  .track-card{ padding:16px 16px 20px; margin-bottom:14px; }
+  .track-label{ font-size:12px; color:var(--muted); margin-bottom:10px; text-align:center; }
+  .track-lane{
+    position:relative; height:72px; background:var(--bg-2); border:1px solid var(--border);
+    border-radius:14px; overflow:hidden; margin-bottom:8px;
+  }
+  .track-fill{
+    position:absolute; left:0; top:0; bottom:0; width:0%;
+    background:linear-gradient(90deg, rgba(255,182,39,0.16), rgba(255,182,39,0.03));
+    transition:width .3s ease;
+  }
+  .track-icon{
+    position:absolute; top:50%; width:42px; height:42px; transform:translate(-50%,-50%);
+    transition:left .4s cubic-bezier(.3,.8,.3,1);
+    z-index:3;
+  }
+  .track-icon svg{ width:100%; height:100%; display:block; }
+  .track-icon.ghost-icon{ z-index:2; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.4)); }
+  .track-icon.donut-icon{ z-index:1; width:46px; height:46px; }
+  .track-caption{ display:flex; justify-content:space-between; font-size:11px; color:var(--muted); flex-wrap:wrap; gap:4px; }
+  .track-caption b{ color:var(--text); }
+
+  .track-lane.shake{ animation: laneShake .5s ease; }
+  @keyframes laneShake{
+    0%,100%{ transform:translateX(0); } 15%{ transform:translateX(-8px); } 30%{ transform:translateX(7px); }
+    45%{ transform:translateX(-6px); } 60%{ transform:translateX(5px); } 75%{ transform:translateX(-3px); }
+  }
+  .track-icon.ghost-icon.chomp{ animation: ghostGrow .9s cubic-bezier(.3,0,.6,1) forwards; z-index:9; }
+  @keyframes ghostGrow{
+    0%{ transform:translate(-50%,-50%) scale(1); }
+    30%{ transform:translate(-50%,-50%) scale(1.4) rotate(-4deg); }
+    55%{ transform:translate(-50%,-50%) scale(2.4) rotate(3deg); }
+    100%{ transform:translate(-50%,-50%) scale(4.2) rotate(0deg); }
+  }
+  .track-icon.pac-icon.eaten{ animation: pacShrink .55s ease-in forwards; animation-delay:.35s; z-index:8; }
+  @keyframes pacShrink{
+    0%{ transform:translate(-50%,-50%) scale(1) rotate(0); opacity:1; }
+    50%{ transform:translate(-50%,-50%) scale(0.7) rotate(40deg); opacity:1; }
+    100%{ transform:translate(-50%,-50%) scale(0) rotate(140deg); opacity:0; }
+  }
+  .gulp-text{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.4);
+    font-family:'Baloo 2', sans-serif; font-weight:800; font-size:24px; color:#fff;
+    text-shadow:0 0 10px rgba(255,111,111,0.9), 0 2px 0 #8a2323;
+    opacity:0; z-index:10; pointer-events:none; letter-spacing:1px;
+  }
+  .gulp-text.show{ animation: gulpPop .8s cubic-bezier(.3,1.6,.4,1) forwards; animation-delay:.5s; }
+  @keyframes gulpPop{
+    0%{ transform:translate(-50%,-50%) scale(0.3); opacity:0; }
+    35%{ transform:translate(-50%,-50%) scale(1.3); opacity:1; }
+    70%{ transform:translate(-50%,-50%) scale(1); opacity:1; }
+    100%{ transform:translate(-50%,-50%) scale(1); opacity:0; }
+  }
+
+  /* ---------- boss banner ---------- */
+  .boss-banner{
+    display:none; align-items:center; gap:8px; background:linear-gradient(90deg, rgba(255,182,39,0.22), rgba(255,182,39,0.05));
+    border:1px solid var(--gold); border-radius:12px; padding:8px 12px; margin-bottom:12px; font-size:13px; font-weight:700; color:var(--gold);
+  }
+  .boss-banner.show{ display:flex; }
+
+  /* ---------- power-up bar ---------- */
+  .power-bar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .power-btn{
+    display:flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--bg-2); color:var(--text);
+    border-radius:10px; padding:7px 11px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .power-btn .pcount{
+    background:var(--surface-2); border-radius:6px; padding:1px 6px; font-size:11px; font-weight:700; color:var(--gold);
+  }
+  .power-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+  .power-btn.armed{ border-color:var(--gold); background:rgba(255,182,39,0.14); color:var(--gold); }
+  .power-help{
+    background:var(--bg-2); border:1px solid var(--border); border-radius:12px; padding:12px 14px;
+    margin:-8px 0 16px; font-size:12.5px; color:var(--muted); line-height:1.6;
+  }
+  .power-help b{ color:var(--text); }
+  .power-help div + div{ margin-top:6px; }
+
+  /* ---------- question card ---------- */
+  #questionCard{ padding:22px 22px 22px; margin-bottom:14px; transition:border-color .2s ease; }
+  #questionCard.boss-card{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(255,182,39,0.25), var(--shadow); }
+  .q-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:14px; }
+  .cat-tag{ font-size:12px; font-weight:700; padding:5px 11px; border-radius:100px; display:inline-flex; align-items:center; gap:6px; }
+  .speak-btn{
+    background:var(--surface-2); border:1px solid var(--border); color:var(--text); width:34px;height:34px;
+    border-radius:50%; font-size:15px; cursor:pointer; flex:none; display:flex;align-items:center;justify-content:center;
+  }
+  .speak-btn:hover{ border-color:var(--gold); }
+  #questionText{ font-size:18px; line-height:1.4; font-weight:600; margin:0 0 18px; }
+  .options{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media(max-width:480px){ .options{ grid-template-columns:1fr; } }
+  .opt{
+    text-align:left; padding:13px 15px; border-radius:12px; border:2px solid var(--border); background:var(--bg-2);
+    color:var(--text); font-family:'Inter', sans-serif; font-size:14.5px; font-weight:500; cursor:pointer;
+    transition:background .15s ease, border-color .15s ease, transform .1s ease; display:flex; align-items:center; gap:10px;
+  }
+  .opt .letter{
+    width:22px;height:22px; border-radius:6px; background:var(--surface-2); display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700; flex:none; color:var(--muted);
+  }
+  .opt:hover:not(.locked):not(.disabled){ border-color:var(--gold); transform:translateY(-1px); }
+  .opt.correct{ border-color:var(--good); background:rgba(71,209,140,0.14); }
+  .opt.correct .letter{ background:var(--good); color:#0d2018; }
+  .opt.incorrect{ border-color:var(--bad); background:rgba(255,111,111,0.14); }
+  .opt.incorrect .letter{ background:var(--bad); color:#2a0d0d; }
+  .opt.locked{ cursor:default; }
+  .opt.disabled{ opacity:0.3; text-decoration:line-through; cursor:not-allowed; pointer-events:none; }
+  .opt .mark{ margin-left:auto; font-size:15px; }
+  #feedbackRow{ min-height:26px; margin-top:14px; font-size:13.5px; font-weight:600; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  #feedbackText{ color:var(--muted); }
+  #nextBtn{ display:none; }
+
+  /* ---------- caught / modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(6,12,24,0.76); display:none;
+    align-items:center; justify-content:center; z-index:2000; padding:16px;
+  }
+  .modal-overlay.show{ display:flex; }
+  .modal-card{
+    background:var(--surface); border:1px solid var(--bad); border-radius:18px; padding:26px;
+    max-width:380px; width:100%; box-shadow:var(--shadow); text-align:center;
+  }
+  .caught-icons{ display:flex; justify-content:center; gap:8px; margin-bottom:14px; }
+  .caught-icons svg{ width:64px; height:64px; }
+  #caughtTitle{ font-size:20px; margin:0 0 8px; }
+  #caughtSub{ color:var(--muted); font-size:14px; margin:0 0 18px; line-height:1.5; }
+
+  /* ---------- end screen ---------- */
+  #endScreen .card{ padding:30px 24px; text-align:center; }
+  #endScreen h2{ font-size:24px; margin:10px 0 4px; }
+  #endScreen .final-score{ font-family:'Baloo 2', sans-serif; font-size:46px; color:var(--gold); font-weight:800; line-height:1; margin:8px 0 4px; }
+  #endScreen .final-label{ color:var(--muted); font-size:14px; margin-bottom:18px; }
+  .trophy-case{ display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; margin-bottom:22px; }
+  .trophy-slot{ background:var(--bg-2); border:1px solid var(--border); border-radius:14px; padding:12px 6px; display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .trophy-slot .icon{ font-size:22px; filter:grayscale(1) opacity(0.35); }
+  .trophy-slot.unlocked .icon{ filter:none; }
+  .trophy-slot .name{ font-size:10px; color:var(--muted); text-align:center; line-height:1.2; }
+  .trophy-slot.unlocked .name{ color:var(--text); }
+  .badge-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+  .badge{ border-radius:14px; padding:14px 6px; display:flex;flex-direction:column;align-items:center;gap:6px; border:1px solid var(--border); }
+  .badge .icon{ filter:grayscale(1) opacity(0.35); }
+  .badge .icon svg{ width:26px; height:26px; display:block; }
+  .badge.unlocked .icon{ filter:none; }
+  .badge .name{ font-size:11px; font-weight:700; }
+  .badge .stat{ font-size:11px; color:var(--muted); }
+  .btn-row{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:14px; }
+  .submit-row{ border-top:1px solid var(--border); padding-top:16px; margin-top:6px; }
+  .submit-row p{ font-size:12px; color:var(--muted); margin:0 0 10px; }
+
+  /* ---------- confetti ---------- */
+  .confetti-piece{
+    position:fixed; top:-20px; width:9px;height:14px; z-index:999; pointer-events:none;
+    animation-name:fall; animation-timing-function:ease-in; animation-fill-mode:forwards;
+  }
+  @keyframes fall{ to{ transform:translateY(110vh) rotate(360deg); opacity:0.9; } }
+
+  /* ---------- toast ---------- */
+  #toast{
+    position:fixed; left:50%; top:26px; transform:translate(-50%, -140%);
+    background:var(--surface); border:2px solid var(--gold); border-radius:16px; padding:14px 22px;
+    display:flex; align-items:center; gap:12px; box-shadow:0 14px 34px rgba(0,0,0,0.4); z-index:2200;
+    transition:transform .4s cubic-bezier(.2,1.4,.4,1); max-width:88vw;
+  }
+  #toast.show{ transform:translate(-50%, 0); }
+  #toast .icon{ font-size:26px; }
+  #toast .title{ font-family:'Baloo 2', sans-serif; font-weight:700; font-size:14px; color:var(--gold); }
+  #toast .sub{ font-size:11.5px; color:var(--muted); max-width:230px; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="toast">
+  <div class="icon" id="toastIcon">🏆</div>
+  <div>
+    <div class="title" id="toastTitle">Trophy earned!</div>
+    <div class="sub" id="toastSub">Keep going</div>
+  </div>
+</div>
+
+<div id="caughtModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="caught-icons" id="caughtIcons"></div>
+    <h3 id="caughtTitle">Gulp! Caught!</h3>
+    <p id="caughtSub">The ghost swallowed Pac-Man. Take a breath and start the rescue again \u2014 you've got this.</p>
+    <button class="btn" id="tryAgainBtn">Try Again 🔁</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="shelf">
+    <div class="shelf-trophies" id="shelfTrophies"></div>
+    <div class="shelf-right">
+      <button class="mute-btn" id="muteBtn" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+      <div class="lives" id="livesDisplay">❤️❤️❤️❤️</div>
+      <div class="score-box">
+        <div class="num" id="scoreDisplay">0</div>
+        <div class="lab">points</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- START SCREEN -->
+  <section id="startScreen" class="screen active">
+    <div class="card">
+      <div class="donut-hero" id="donutHero"></div>
+      <div class="kicker">MACRO QUEST</div>
+      <h1>Rescue Princess Donut!</h1>
+      <p class="sub">A ghost has cornered Princess Donut, and only correct answers can clear the way to her. Get questions right to close the gap and earn power-ups along the way &mdash; but four wrong answers and the ghost swallows you whole, sending you back to the start. No clock, no rush.</p>
+      <div class="cat-row" id="catRow"></div>
+      <div class="goal-row">
+        <label>How many correct answers to rescue her?</label>
+        <div class="goal-pick" id="goalPick"></div>
+      </div>
+      <div class="best-note" id="bestNote"></div>
+      <input type="text" id="nameInput" placeholder="Your name (optional, just for fun)" maxlength="24">
+      <div>
+        <button class="btn" id="startBtn">Begin the Rescue 🐾</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUEST SCREEN -->
+  <section id="questScreen" class="screen">
+    <div class="card track-card">
+      <div class="track-label">Answer correctly to close the gap to Princess Donut &mdash; wrong answers let the ghost gain on you.</div>
+      <div class="track-lane" id="trackLane">
+        <div class="track-fill" id="trackFill"></div>
+      </div>
+      <div class="track-caption">
+        <span>Correct: <b id="correctCountLabel">0</b> / <span id="goalLabel">20</span></span>
+        <span>Ghost gap: <b id="gapLabel">safe</b></span>
+      </div>
+    </div>
+
+    <div class="boss-banner" id="bossBanner">⭐ Boss Question &mdash; double points and a big push-back if you nail it!</div>
+
+    <div class="power-bar" id="powerBar">
+      <button class="power-btn" id="hintBtn" title="Removes one wrong answer. Costs 5 points. Always available.">💡 Hint <span class="pcount">-5 pts</span></button>
+      <button class="power-btn" id="fiftyBtn" title="Removes two wrong answers, leaving just the right one and one wrong one. Free once earned.">🎯 50/50 <span class="pcount" id="fiftyCount">0</span></button>
+      <button class="power-btn" id="shieldBtn" title="Arm it: your next wrong answer costs no life and the ghost doesn't move. Free once earned.">🛡️ Shield <span class="pcount" id="shieldCount">0</span></button>
+      <button class="power-btn" id="wagerBtn" title="Arm it before answering: double points if right, but a big ghost lunge if wrong. Free once earned.">🎲 Wager <span class="pcount" id="wagerCount">0</span></button>
+      <button class="power-btn" id="powerHelpBtn" type="button">❓ What do these do?</button>
+    </div>
+    <div class="power-help" id="powerHelp" style="display:none;">
+      <div><b>💡 Hint</b> &mdash; removes one wrong answer. Costs 5 points. Always available, once per question.</div>
+      <div><b>🎯 50/50</b> &mdash; removes two wrong answers. Free once you've earned it (every 4th correct answer).</div>
+      <div><b>🛡️ Shield</b> &mdash; arm it, and your next wrong answer costs nothing: no life lost, ghost stays put. Earned like 50/50.</div>
+      <div><b>🎲 Wager</b> &mdash; arm it before answering: get it right for double points and extra ghost push-back, get it wrong and the ghost lunges hard. Earned every 6th correct answer.</div>
+      <div><b>⭐ Boss Question</b> &mdash; shows up every 5th correct answer. Worth double points and a bigger push-back if you get it right.</div>
+    </div>
+
+    <div class="card" id="questionCard">
+      <div class="q-top">
+        <div class="q-top-left">
+          <div class="creature-avatar" id="qAvatar"></div>
+          <div>
+            <span class="cat-tag" id="catTag"></span>
+            <div class="creature-name" id="creatureName"></div>
+          </div>
+        </div>
+        <button class="speak-btn" id="speakBtn" title="Read question aloud" aria-label="Read question aloud">🔊</button>
+      </div>
+      <p id="questionText"></p>
+      <div class="options" id="optionsWrap"></div>
+      <div id="feedbackRow">
+        <span id="feedbackText"></span>
+        <button class="btn" id="nextBtn">Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- END SCREEN -->
+  <section id="endScreen" class="screen">
+    <div class="card">
+      <div class="donut-hero" id="donutVictory" style="width:130px;height:130px;"></div>
+      <div class="kicker">RESCUE COMPLETE</div>
+      <h2 id="endHeadline">Princess Donut is safe!</h2>
+      <div class="final-score" id="finalScore">0</div>
+      <div class="final-label">total points</div>
+
+      <h3 style="margin:0 0 10px;font-size:15px;color:var(--muted);">Trophy Case</h3>
+      <div class="trophy-case" id="finalTrophyCase"></div>
+
+      <h3 style="margin:0 0 10px;font-size:15px;color:var(--muted);">Category Badges</h3>
+      <div class="badge-row" id="finalBadgeRow"></div>
+
+      <div class="btn-row">
+        <button class="btn" id="endlessBtn">Keep Going \u2014 Endless Mode 🚀</button>
+        <button class="btn secondary" id="playAgainBtn">Play Again 🔁</button>
+      </div>
+
+      <div class="submit-row" id="submitRow" style="display:none;">
+        <p>Want your score on the class list? This sends your name and score to your teacher's sheet.</p>
+        <button class="btn small" id="submitScoreBtn">Submit My Score</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+
+  /* =====================================================================
+     REUSING THIS FOR ANOTHER UNIT? Edit these three things:
+     1. CONFIG below (titles, mission text, rescue character)
+     2. BANK (question content, category names/colors/emoji)
+     3. donutSVG() if you want a different rescue character illustration
+     Everything else (tiers, boss questions, power-ups, sound, trophies,
+     the chase track, save/restore) works automatically off those.
+  ===================================================================== */
+  const CONFIG = {
+    scriptUrl: "", // paste an Apps Script Web App URL here to enable class score submission
+    storageKey: "macroquest_best_v1"
+  };
+
+  // ================= question bank (t = difficulty tier 1-3) =================
+  const BANK = {
+    carbs: {
+      label: "Carbohydrate", color: "var(--carb)", emoji: "🍞",
+      questions: [
+        { t:1, q:"What is the monomer (building block) of a carbohydrate?", a:"Monosaccharide (simple sugar)", d:["Amino acid","Fatty acid","Nucleotide"] },
+        { t:1, q:"Carbohydrates are mainly used by the body for\u2026", a:"Quick, short-term energy", d:["Long-term energy storage","Building muscle tissue","Storing genetic information"] },
+        { t:1, q:"Which of these foods is richest in carbohydrates?", a:"Bread, pasta, and fruit", d:["Meat and nuts","Oils and butter","Eggs and cheese"] },
+        { t:2, q:"Extra carbohydrates are stored in the liver as a polymer called\u2026", a:"Glycogen", d:["Cholesterol","Keratin","Chitin"] },
+        { t:2, q:"A polysaccharide is a carbohydrate made of\u2026", a:"Many sugar units linked together", d:["One sugar unit","Two fatty acids","A single nucleotide"] },
+        { t:2, q:"Which of these is a lipid, NOT a carbohydrate?", a:"Butter", d:["Bread","Rice","Pasta"] },
+        { t:3, q:"Table sugar (sucrose) is an example of a\u2026", a:"Disaccharide (two sugars joined)", d:["Monosaccharide","Polysaccharide","Amino acid chain"] },
+        { t:3, q:"Fiber, a type of carbohydrate, mainly helps the body by\u2026", a:"Keeping digestion regular", d:["Storing long-term fat","Building antibodies","Carrying genetic code"] },
+        { t:3, q:"A marathon runner would eat extra \u2014 the night before a race for quick energy.", a:"Carbohydrates", d:["Lipids","Nucleic acids","Only protein"] }
+      ]
+    },
+    lipids: {
+      label: "Lipid", color: "var(--lipid)", emoji: "🧈",
+      questions: [
+        { t:1, q:"What two building blocks (monomers) make up a lipid?", a:"Glycerol and fatty acids", d:["Amino acids","Monosaccharides","Nucleotides"] },
+        { t:1, q:"Lipids are the best macromolecule for\u2026", a:"Long-term energy storage and insulation", d:["Quick, short-term energy","Muscle repair","Carrying genetic information"] },
+        { t:1, q:"Which of these is a good example of a lipid?", a:"Cooking oil or butter", d:["Bread","Chicken breast","DNA"] },
+        { t:2, q:"A \u201csaturated\u201d fat has\u2026", a:"No double bonds between its carbons", d:["Many double bonds between carbons","No carbon atoms at all","Only nitrogen bonds"] },
+        { t:2, q:"Besides storing energy, lipids also help the body by\u2026", a:"Cushioning organs and forming cell membranes", d:["Speeding up digestion","Storing genetic code","Building antibodies"] },
+        { t:2, q:"Which macromolecule would a hibernating bear want to eat the most of before winter?", a:"Lipids", d:["Carbohydrates","Nucleic acids","Proteins"] },
+        { t:3, q:"Trans fats and saturated fats are both types of\u2026", a:"Lipids", d:["Carbohydrates","Proteins","Nucleic acids"] },
+        { t:3, q:"Cell membranes are largely built from a special type of lipid called a\u2026", a:"Phospholipid", d:["Amino acid","Nucleotide","Monosaccharide"] },
+        { t:3, q:"Gram for gram, lipids store \u2014 energy compared to carbohydrates.", a:"More", d:["Less","The same amount of","No"] }
+      ]
+    },
+    protein: {
+      label: "Protein", color: "var(--protein)", emoji: "🥩",
+      questions: [
+        { t:1, q:"What is the monomer (building block) of a protein?", a:"Amino acid", d:["Monosaccharide","Fatty acid","Nucleotide"] },
+        { t:1, q:"Proteins are mainly used by the body to\u2026", a:"Build and repair structures like muscle", d:["Store long-term energy","Provide quick energy","Carry genetic information"] },
+        { t:1, q:"A bodybuilder reading a food label would pay closest attention to the amount of\u2026", a:"Protein", d:["Carbohydrates","Lipids","Nucleic acids"] },
+        { t:2, q:"Which foods are the best sources of protein?", a:"Meat, beans, and nuts", d:["Bread and pasta","Butter and oil","Candy and soda"] },
+        { t:2, q:"A special protein that speeds up chemical reactions in the body is called a(n)\u2026", a:"Enzyme", d:["Hormone","Nucleotide","Polysaccharide"] },
+        { t:2, q:"When many amino acids link together in a chain, the result is called a\u2026", a:"Polypeptide (protein)", d:["Polysaccharide","Nucleotide chain","Lipid bilayer"] },
+        { t:3, q:"Antibodies, which help fight off infection, are made of\u2026", a:"Protein", d:["Carbohydrate","Lipid","Nucleic acid"] },
+        { t:3, q:"Which macromolecule builds hair, nails, and muscle tissue?", a:"Protein", d:["Carbohydrate","Lipid","Nucleic acid"] },
+        { t:3, q:"Why do proteins have so many different jobs in the body?", a:"Amino acids can be arranged in countless sequences and shapes", d:["They are the smallest molecule in the cell","They only come from one type of food","They cannot form long chains"] }
+      ]
+    },
+    nucleic: {
+      label: "Nucleic Acid", color: "var(--nucleic)", emoji: "🧬",
+      questions: [
+        { t:1, q:"What is the monomer (building block) of a nucleic acid?", a:"Nucleotide", d:["Amino acid","Fatty acid","Monosaccharide"] },
+        { t:1, q:"DNA and RNA are both examples of\u2026", a:"Nucleic acids", d:["Proteins","Lipids","Carbohydrates"] },
+        { t:1, q:"The main job of nucleic acids in a cell is to\u2026", a:"Store and pass on genetic information", d:["Provide quick energy","Store long-term fat","Build muscle tissue"] },
+        { t:2, q:"Where would you find nucleic acids?", a:"In the cells of every living thing", d:["Only in meat","Only in plant leaves","Only in bones"] },
+        { t:2, q:"DNA is shaped like a\u2026", a:"Double helix", d:["Single straight chain","Flat sheet","Perfect sphere"] },
+        { t:2, q:"Which macromolecule contains the instructions for building proteins?", a:"Nucleic acids (DNA)", d:["Lipids","Carbohydrates","None of these"] },
+        { t:3, q:"A nucleotide is made of a sugar, a phosphate, and a\u2026", a:"Nitrogen base", d:["Fatty acid","Amino acid","Glycerol molecule"] },
+        { t:3, q:"Compared to the other three macromolecules, nucleic acids are unique because they\u2026", a:"Carry hereditary/genetic information", d:["Provide the most energy","Digest food","Insulate the body"] },
+        { t:3, q:"Which statement about nucleic acids is TRUE?", a:"Nearly every cell in the body contains them", d:["Only muscle cells contain them","They are only found in food","They provide short-term energy"] }
+      ]
+    }
+  };
+
+  // ================= creatures =================
+  const CAT_HEX  = { carbs:"#7bd0ff", lipids:"#ffb627", protein:"#ff9466", nucleic:"#b98cff" };
+  const CAT_DARK = { carbs:"#2d7fae", lipids:"#b9790a", protein:"#c2603c", nucleic:"#7a54c9" };
+  const FACE = "#16233a";
+  const CREATURE_NAMES = { carbs:"Zippy", lipids:"Buttercup", protein:"Brick", nucleic:"Helix" };
+
+  const ACCESSORY = {
+    carbs: (c,d)=> `<polygon points="50,6 40,32 50,32 38,58 66,26 54,26" fill="#fff6d6" stroke="${d}" stroke-width="2" stroke-linejoin="round"/>`,
+    lipids: (c,d)=> `<circle cx="22" cy="36" r="11" fill="${c}" stroke="${d}" stroke-width="2"/><circle cx="78" cy="36" r="11" fill="${c}" stroke="${d}" stroke-width="2"/><path d="M28 76 Q50 86 72 76" fill="none" stroke="${d}" stroke-width="3" stroke-linecap="round"/>`,
+    protein: (c,d)=> `<rect x="10" y="52" width="15" height="22" rx="6" fill="${c}" stroke="${d}" stroke-width="2"/><rect x="75" y="52" width="15" height="22" rx="6" fill="${c}" stroke="${d}" stroke-width="2"/><rect x="38" y="14" width="24" height="13" rx="4" fill="${d}"/>`,
+    nucleic: (c,d)=> `<path d="M28 18 Q42 34 28 50 Q14 66 28 82" fill="none" stroke="${d}" stroke-width="3" stroke-linecap="round"/><path d="M72 18 Q58 34 72 50 Q86 66 72 82" fill="none" stroke="${d}" stroke-width="3" stroke-linecap="round"/><line x1="28" y1="28" x2="72" y2="28" stroke="${d}" stroke-width="2"/><line x1="28" y1="50" x2="72" y2="50" stroke="${d}" stroke-width="2"/><line x1="28" y1="72" x2="72" y2="72" stroke="${d}" stroke-width="2"/>`
+  };
+
+  function creatureSVG(catKey, mood, label){
+    const c = CAT_HEX[catKey], d = CAT_DARK[catKey];
+    let eyes, mouth;
+    if(mood === 'happy'){
+      eyes = `<path d="M32 50 Q38 44 44 50" stroke="${FACE}" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M56 50 Q62 44 68 50" stroke="${FACE}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+      mouth = `<path d="M36 63 Q50 78 64 63" stroke="${FACE}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    } else if(mood === 'curious'){
+      eyes = `<circle cx="38" cy="52" r="5" fill="${FACE}"/><circle cx="63" cy="52" r="4" fill="${FACE}"/>
+              <path d="M56 40 Q63 35 69 39" stroke="${FACE}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+      mouth = `<circle cx="50" cy="66" r="5" fill="none" stroke="${FACE}" stroke-width="3"/>`;
+    } else {
+      eyes = `<circle cx="38" cy="52" r="5" fill="${FACE}"/><circle cx="62" cy="52" r="5" fill="${FACE}"/>`;
+      mouth = `<path d="M40 65 Q50 71 60 65" stroke="${FACE}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    }
+    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${label || CREATURE_NAMES[catKey]}">
+      <ellipse cx="50" cy="60" rx="34" ry="30" fill="${c}"/>
+      <ellipse cx="50" cy="72" rx="20" ry="12" fill="${d}" opacity="0.18"/>
+      ${ACCESSORY[catKey](c,d)}
+      ${eyes}
+      ${mouth}
+    </svg>`;
+  }
+
+  function pacmanSVG(){
+    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pac-Man">
+      <path d="M50 50 L92 28 A42 42 0 1 0 92 72 Z" fill="#ffd23f" stroke="#c98f00" stroke-width="2"/>
+      <circle cx="54" cy="28" r="5" fill="#16233a"/>
+    </svg>`;
+  }
+
+  function ghostSVG(){
+    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The ghost">
+      <path d="M20 92 L20 46 A30 30 0 0 1 80 46 L80 92 L68 80 L56 92 L44 80 L32 92 Z" fill="#ff6f6f" stroke="#8a2323" stroke-width="2.5"/>
+      <circle cx="38" cy="50" r="8" fill="#16233a"/>
+      <circle cx="62" cy="50" r="8" fill="#16233a"/>
+      <circle cx="40" cy="48" r="3" fill="#fff"/>
+      <circle cx="64" cy="48" r="3" fill="#fff"/>
+    </svg>`;
+  }
+
+  function donutSVG(mood){
+    const happy = mood === 'happy';
+    const eyes = happy
+      ? `<path d="M40 66 Q46 60 52 66" stroke="#16233a" stroke-width="3" fill="none" stroke-linecap="round"/>
+         <path d="M64 66 Q70 60 76 66" stroke="#16233a" stroke-width="3" fill="none" stroke-linecap="round"/>`
+      : `<ellipse cx="46" cy="66" rx="5" ry="7" fill="#16233a"/><ellipse cx="70" cy="66" rx="5" ry="7" fill="#16233a"/>
+         <ellipse cx="47.5" cy="63" rx="1.6" ry="2.2" fill="#fff"/><ellipse cx="71.5" cy="63" rx="1.6" ry="2.2" fill="#fff"/>`;
+    const mouth = happy
+      ? `<path d="M50 80 Q58 90 66 80" stroke="#16233a" stroke-width="3" fill="none" stroke-linecap="round"/>`
+      : `<path d="M52 80 Q58 84 64 80" stroke="#16233a" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+    return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Princess Donut">
+      <polygon points="34,38 44,16 54,38" fill="#ffcfe3" stroke="#d88fae" stroke-width="2"/>
+      <polygon points="66,38 76,16 86,38" fill="#ffcfe3" stroke="#d88fae" stroke-width="2"/>
+      <polygon points="38,34 46,22 50,36" fill="#ff9fc4"/>
+      <polygon points="70,34 74,22 82,36" fill="#ff9fc4"/>
+      <circle cx="58" cy="64" r="34" fill="#fff4e8" stroke="#d8b98a" stroke-width="2"/>
+      <line x1="30" y1="70" x2="14" y2="66" stroke="#c9a06a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="30" y1="76" x2="14" y2="78" stroke="#c9a06a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="86" y1="70" x2="102" y2="66" stroke="#c9a06a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="86" y1="76" x2="102" y2="78" stroke="#c9a06a" stroke-width="2" stroke-linecap="round"/>
+      ${eyes}
+      <ellipse cx="58" cy="74" rx="3" ry="2" fill="#f2a6c4"/>
+      ${mouth}
+      <path d="M40 20 L50 4 L58 16 L66 4 L76 20 Z" fill="#ffb627" stroke="#c98f00" stroke-width="2"/>
+      <circle cx="50" cy="8" r="2.4" fill="#fff4e8"/>
+      <circle cx="66" cy="8" r="2.4" fill="#fff4e8"/>
+      <circle cx="58" cy="2" r="2.6" fill="#fff4e8"/>
+    </svg>`;
+  }
+
+  const TROPHIES = [
+    { threshold:40,  icon:"🥉", name:"Bronze Beaker" },
+    { threshold:80,  icon:"🥈", name:"Silver Molecule" },
+    { threshold:120, icon:"🥇", name:"Gold Nucleotide" },
+    { threshold:160, icon:"💎", name:"Diamond Enzyme" },
+    { threshold:200, icon:"🏆", name:"Macro Master" }
+  ];
+
+  const CATEGORY_BADGES = {
+    carbs:   { name:"Carb Crusher" },
+    lipids:  { name:"Lipid Legend" },
+    protein: { name:"Protein Pro" },
+    nucleic: { name:"Nucleic Navigator" }
+  };
+
+  const GOAL_OPTIONS = [10, 20, 30];
+  const MAX_LIVES = 4;
+  const MAX_GAP = 5;
+  const START_GAP = 3;
+  const GAP_STEP_PCT = 6.5;
+
+  // ================= sound engine (no audio files, generated tones) =================
+  let audioCtx = null;
+  let soundOn = true;
+  function ensureAudio(){
+    if(!soundOn) return null;
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e){ return null; }
+    }
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function tone(freq, start, dur, type, vol){
+    const ctx = ensureAudio();
+    if(!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+    gain.gain.setValueAtTime(0, ctx.currentTime + start);
+    gain.gain.linearRampToValueAtTime(vol || 0.32, ctx.currentTime + start + 0.02);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(ctx.currentTime + start);
+    osc.stop(ctx.currentTime + start + dur + 0.02);
+  }
+  function sweepTone(f1, f2, start, dur, type, vol){
+    const ctx = ensureAudio();
+    if(!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || 'sawtooth';
+    osc.frequency.setValueAtTime(f1, ctx.currentTime + start);
+    osc.frequency.linearRampToValueAtTime(f2, ctx.currentTime + start + dur);
+    gain.gain.setValueAtTime(0, ctx.currentTime + start);
+    gain.gain.linearRampToValueAtTime(vol || 0.34, ctx.currentTime + start + 0.03);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(ctx.currentTime + start);
+    osc.stop(ctx.currentTime + start + dur + 0.02);
+  }
+  function sfxReady(){ tone(880,0,0.16,'sine',0.3); }
+  function sfxCorrect(){ tone(660,0,0.11,'triangle',0.3); tone(880,0.09,0.14,'triangle',0.3); }
+  function sfxWrong(){ tone(220,0,0.18,'sawtooth',0.28); tone(160,0.1,0.22,'sawtooth',0.26); }
+  function sfxBoss(){ tone(523,0,0.1,'square',0.26); tone(659,0.1,0.1,'square',0.26); tone(784,0.2,0.16,'square',0.28); }
+  function sfxPower(){ tone(880,0,0.08,'sine',0.28); tone(1174,0.06,0.1,'sine',0.28); }
+  function sfxGulp(){ sweepTone(320,70,0,0.7,'sawtooth',0.36); }
+  function sfxVictory(){
+    [523,659,784,1047].forEach((f,i)=> tone(f, i*0.14, 0.22, 'triangle', 0.32));
+  }
+  function sfxTrophy(){ tone(784,0,0.12,'sine',0.28); tone(988,0.1,0.16,'sine',0.28); }
+
+  // ================= state =================
+  let GOAL_CORRECT = 20;
+  let score = 0;
+  let correctCount = 0;
+  let wrongCount = 0;
+  let ghostGap = START_GAP;
+  let unlockedTrophies = new Set();
+  let categoryStats = {};
+  let tier = 1;
+  let tierStreak = 0;
+  let bossPending = false;
+  let tierQueues = { 1:[], 2:[], 3:[] };
+  let currentQuestion = null;
+  let awaitingNext = false;
+  let endlessMode = false;
+
+  // power-ups
+  let hintUsedThisQ = false;
+  let fiftyUsedThisQ = false;
+  let fiftyCount = 0;
+  let shieldCount = 0;
+  let shieldActive = false;
+  let wagerCount = 0;
+  let wagerArmed = false;
+
+  // ================= helpers =================
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function allQuestionsFlat(){
+    let all = [];
+    Object.keys(BANK).forEach(cat=>{
+      BANK[cat].questions.forEach(q=> all.push({ cat, q }));
+    });
+    return all;
+  }
+
+  function refillTierQueue(t){
+    tierQueues[t] = shuffle(allQuestionsFlat().filter(x=>x.q.t === t));
+  }
+  function drawFromTier(t){
+    if(!tierQueues[t] || tierQueues[t].length === 0) refillTierQueue(t);
+    return tierQueues[t].pop();
+  }
+
+  function renderShelf(){
+    const shelf = document.getElementById('shelfTrophies');
+    shelf.innerHTML = '';
+    TROPHIES.forEach((t,i)=>{
+      const el = document.createElement('div');
+      el.className = 'medal' + (unlockedTrophies.has(i) ? ' unlocked' : '');
+      el.textContent = t.icon;
+      el.title = t.name + " \u2014 " + t.threshold + " pts";
+      el.id = 'medal-'+i;
+      shelf.appendChild(el);
+    });
+    document.getElementById('scoreDisplay').textContent = score;
+  }
+
+  function renderLives(){
+    const remaining = Math.max(MAX_LIVES - wrongCount, 0);
+    document.getElementById('livesDisplay').textContent = "❤️".repeat(remaining) + "🖤".repeat(MAX_LIVES - remaining);
+  }
+
+  function checkTrophies(){
+    TROPHIES.forEach((t,i)=>{
+      if(!unlockedTrophies.has(i) && score >= t.threshold){
+        unlockedTrophies.add(i);
+        showToast(t.icon, t.name + " unlocked!", t.threshold + " points reached");
+        sfxTrophy();
+        const el = document.getElementById('medal-'+i);
+        if(el){
+          el.classList.add('unlocked','pop');
+          setTimeout(()=>el.classList.remove('pop'), 500);
+        }
+        launchConfetti();
+      }
+    });
+  }
+
+  function showToast(icon, title, sub){
+    const toast = document.getElementById('toast');
+    document.getElementById('toastIcon').textContent = icon;
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastSub').textContent = sub;
+    toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=> toast.classList.remove('show'), 2600);
+  }
+
+  function launchConfetti(){
+    const colors = ['#ffb627','#7bd0ff','#47d18c','#ff9466','#b98cff'];
+    for(let i=0;i<28;i++){
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.left = Math.random()*100 + 'vw';
+      p.style.background = colors[Math.floor(Math.random()*colors.length)];
+      p.style.animationDuration = (1.6 + Math.random()*1.2) + 's';
+      p.style.opacity = 0.9;
+      document.body.appendChild(p);
+      setTimeout(()=> p.remove(), 3200);
+    }
+  }
+
+  function speak(text){
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.95;
+    window.speechSynthesis.speak(u);
+  }
+
+  // ================= local best score =================
+  function loadBest(){
+    try{
+      const raw = localStorage.getItem(CONFIG.storageKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e){ return null; }
+  }
+  function saveBestIfBetter(){
+    try{
+      const cur = loadBest();
+      if(!cur || score > cur.score){
+        localStorage.setItem(CONFIG.storageKey, JSON.stringify({ score, date:new Date().toISOString() }));
+      }
+    } catch(e){ /* storage unavailable, skip */ }
+  }
+  function renderBestNote(){
+    const best = loadBest();
+    document.getElementById('bestNote').textContent = best
+      ? ("Best on this device: " + best.score + " pts")
+      : "";
+  }
+
+  // ================= intro =================
+  function renderIntro(){
+    document.getElementById('donutHero').innerHTML = donutSVG('idle');
+    const catRow = document.getElementById('catRow');
+    catRow.innerHTML = '';
+    Object.keys(BANK).forEach(catKey=>{
+      const chip = document.createElement('div');
+      chip.className = 'cat-chip';
+      chip.innerHTML = '<span class="mini-creature">'+creatureSVG(catKey,'idle')+'</span>'+BANK[catKey].label+'s';
+      catRow.appendChild(chip);
+    });
+
+    const goalPick = document.getElementById('goalPick');
+    goalPick.innerHTML = '';
+    GOAL_OPTIONS.forEach(n=>{
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'goal-btn' + (n === GOAL_CORRECT ? ' active' : '');
+      btn.textContent = n;
+      btn.addEventListener('click', ()=>{
+        GOAL_CORRECT = n;
+        document.querySelectorAll('.goal-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+      goalPick.appendChild(btn);
+    });
+
+    renderBestNote();
+
+    document.getElementById('muteBtn').addEventListener('click', ()=>{
+      soundOn = !soundOn;
+      document.getElementById('muteBtn').textContent = soundOn ? '🔊' : '🔇';
+      if(soundOn) sfxReady();
+    });
+  }
+
+  // ================= question flow =================
+  function nextQuestion(){
+    hintUsedThisQ = false;
+    fiftyUsedThisQ = false;
+    awaitingNext = false;
+
+    let isBoss = false;
+    let drawTier = tier;
+    if(bossPending){
+      isBoss = true;
+      drawTier = 3;
+      bossPending = false;
+    }
+    currentQuestion = drawFromTier(drawTier);
+    currentQuestion.isBoss = isBoss;
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    const { cat, q, isBoss } = currentQuestion;
+    const catInfo = BANK[cat];
+
+    const catTag = document.getElementById('catTag');
+    catTag.textContent = catInfo.emoji + ' ' + catInfo.label;
+    catTag.style.background = "color-mix(in srgb, " + catInfo.color + " 22%, var(--bg-2))";
+    catTag.style.color = catInfo.color;
+
+    document.getElementById('qAvatar').innerHTML = creatureSVG(cat, 'idle');
+    document.getElementById('creatureName').textContent = CREATURE_NAMES[cat] + " asks\u2026";
+    document.getElementById('questionText').textContent = q.q;
+
+    document.getElementById('bossBanner').classList.toggle('show', !!isBoss);
+    document.getElementById('questionCard').classList.toggle('boss-card', !!isBoss);
+    if(isBoss) sfxBoss();
+
+    const opts = shuffle([q.a, ...q.d]);
+    const wrap = document.getElementById('optionsWrap');
+    wrap.innerHTML = '';
+    const letters = ['A','B','C','D'];
+    opts.forEach((opt,i)=>{
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.innerHTML = '<span class="letter">'+letters[i]+'</span><span>'+opt+'</span><span class="mark"></span>';
+      btn.addEventListener('click', ()=> answerQuestion(opt, btn));
+      wrap.appendChild(btn);
+    });
+
+    document.getElementById('feedbackText').textContent = '';
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('speakBtn').onclick = ()=> speak(q.q + ". Choices: " + opts.join(", "));
+
+    updatePowerBar();
+  }
+
+  function updatePowerBar(){
+    document.getElementById('fiftyCount').textContent = fiftyCount;
+    document.getElementById('shieldCount').textContent = shieldCount;
+    document.getElementById('wagerCount').textContent = wagerCount;
+
+    const optionsRemaining = document.querySelectorAll('#optionsWrap .opt:not(.disabled)').length;
+    document.getElementById('hintBtn').disabled = hintUsedThisQ || optionsRemaining <= 2;
+    document.getElementById('fiftyBtn').disabled = fiftyCount <= 0 || fiftyUsedThisQ || optionsRemaining <= 2;
+    document.getElementById('shieldBtn').disabled = shieldCount <= 0 || shieldActive;
+    document.getElementById('shieldBtn').classList.toggle('armed', shieldActive);
+    document.getElementById('wagerBtn').disabled = wagerCount <= 0 && !wagerArmed;
+    document.getElementById('wagerBtn').classList.toggle('armed', wagerArmed);
+  }
+
+  function eliminateWrongOptions(n){
+    const correctText = currentQuestion.q.a;
+    const candidates = Array.from(document.querySelectorAll('#optionsWrap .opt'))
+      .filter(b=> !b.classList.contains('disabled') && b.querySelector('span:nth-child(2)').textContent !== correctText);
+    shuffle(candidates).slice(0, n).forEach(b=>{
+      b.classList.add('disabled');
+      b.disabled = true;
+    });
+  }
+
+  document.getElementById('powerHelpBtn').addEventListener('click', function(){
+    const panel = document.getElementById('powerHelp');
+    const showing = panel.style.display !== 'none';
+    panel.style.display = showing ? 'none' : 'block';
+    this.textContent = showing ? '❓ What do these do?' : '✕ Hide explanation';
+  });
+
+  document.getElementById('hintBtn').addEventListener('click', ()=>{
+    if(hintUsedThisQ) return;
+    hintUsedThisQ = true;
+    score = Math.max(0, score - 5);
+    renderShelf();
+    eliminateWrongOptions(1);
+    updatePowerBar();
+  });
+  document.getElementById('fiftyBtn').addEventListener('click', ()=>{
+    if(fiftyCount <= 0 || fiftyUsedThisQ) return;
+    fiftyUsedThisQ = true;
+    fiftyCount -= 1;
+    sfxPower();
+    eliminateWrongOptions(2);
+    updatePowerBar();
+  });
+  document.getElementById('shieldBtn').addEventListener('click', ()=>{
+    if(shieldCount <= 0 || shieldActive) return;
+    shieldCount -= 1;
+    shieldActive = true;
+    sfxPower();
+    showToast('🛡️', 'Shield armed!', "Your next wrong answer won't cost a life or ground.");
+    updatePowerBar();
+  });
+  document.getElementById('wagerBtn').addEventListener('click', ()=>{
+    if(wagerArmed){ wagerArmed = false; updatePowerBar(); return; }
+    if(wagerCount <= 0) return;
+    wagerArmed = true;
+    sfxPower();
+    showToast('🎲', 'Wager armed!', "Double points and gap recovery if right \u2014 a bigger ghost lunge if wrong.");
+    updatePowerBar();
+  });
+
+  function answerQuestion(chosen, btnEl){
+    if(awaitingNext) return;
+    awaitingNext = true;
+    const { cat, q, isBoss } = currentQuestion;
+    const correct = chosen === q.a;
+
+    document.querySelectorAll('#optionsWrap .opt').forEach(b=>{
+      b.classList.add('locked');
+      const label = b.querySelector('span:nth-child(2)').textContent;
+      if(label === q.a){
+        b.classList.add('correct');
+        b.querySelector('.mark').textContent = '✓';
+      }
+    });
+
+    categoryStats[cat].attempts += 1;
+    const wasWagered = wagerArmed;
+    wagerArmed = false;
+
+    if(correct){
+      btnEl.classList.add('correct');
+      categoryStats[cat].correct += 1;
+      correctCount += 1;
+      sfxCorrect();
+
+      let basePts = isBoss ? 20 : 10;
+      let gapGain = isBoss ? 2 : 1;
+      if(wasWagered){ basePts *= 2; gapGain += 1; wagerCount = wagerCount; }
+      score += basePts;
+      ghostGap = Math.min(MAX_GAP, ghostGap + gapGain);
+
+      tierStreak += 1;
+      if(tierStreak >= 3 && tier < 3){ tier += 1; tierStreak = 0; }
+
+      let msg = isBoss ? ("Boss question crushed! +"+basePts+" pts") : ("Correct! The ghost backs off a step. +"+basePts+" pts");
+      if(wasWagered) msg += " (wager paid off!)";
+      document.getElementById('feedbackText').textContent = msg;
+      renderShelf();
+      checkTrophies();
+
+      if(correctCount > 0 && correctCount % 4 === 0){
+        if(Math.random() < 0.5){ fiftyCount = Math.min(3, fiftyCount+1); showToast('🎯','50/50 earned!','Removes two wrong answers on a future question.'); }
+        else { shieldCount = Math.min(3, shieldCount+1); showToast('🛡️','Shield earned!','Blocks the next wrong answer\u2019s consequences.'); }
+      }
+      if(correctCount > 0 && correctCount % 6 === 0){
+        wagerCount = Math.min(2, wagerCount+1);
+        showToast('🎲','Wager token earned!','Risk it for double points on a future question.');
+      }
+      if(!isBoss && correctCount > 0 && correctCount % 5 === 0 && correctCount < GOAL_CORRECT){
+        bossPending = true;
+      }
+    } else {
+      btnEl.classList.add('incorrect');
+      btnEl.querySelector('.mark').textContent = '✗';
+      tierStreak = 0;
+      tier = Math.max(1, tier - 1);
+
+      if(shieldActive){
+        shieldActive = false;
+        document.getElementById('feedbackText').textContent = "Shield absorbed that miss \u2014 no life lost, no ground given up!";
+      } else {
+        sfxWrong();
+        wrongCount += 1;
+        const gapLoss = wasWagered ? MAX_GAP : 1; // wager gone wrong = ghost right on top of you
+        ghostGap = Math.max(0, ghostGap - gapLoss);
+        document.getElementById('feedbackText').textContent = wasWagered
+          ? "Wager lost \u2014 the ghost lunges hard! Correct answer shown above."
+          : "Not quite \u2014 correct answer shown above. The ghost lunges closer!";
+        renderLives();
+      }
+    }
+
+    updateTrack();
+    updatePowerBar();
+
+    if(correctCount >= GOAL_CORRECT && !endlessMode){
+      setTimeout(showVictory, 1000);
+      return;
+    }
+    if(wrongCount >= MAX_LIVES){
+      setTimeout(playCaughtSequence, 500);
+      return;
+    }
+
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function updateTrack(){
+    const pct = Math.min(1, correctCount / GOAL_CORRECT);
+    const pacmanLeft = 6 + pct * 78;
+    const gapOffset = ghostGap * GAP_STEP_PCT;
+    const ghostLeft = Math.max(2, pacmanLeft - gapOffset);
+
+    document.getElementById('trackFill').style.width = pacmanLeft + '%';
+    const pacEl = document.getElementById('trackPac');
+    const ghostEl = document.getElementById('trackGhost');
+    if(pacEl) pacEl.style.left = pacmanLeft + '%';
+    if(ghostEl) ghostEl.style.left = ghostLeft + '%';
+
+    document.getElementById('correctCountLabel').textContent = correctCount;
+    document.getElementById('goalLabel').textContent = endlessMode ? (GOAL_CORRECT + '+') : GOAL_CORRECT;
+    const gapLabel = document.getElementById('gapLabel');
+    if(ghostGap <= 1) gapLabel.textContent = 'right behind you!';
+    else if(ghostGap <= 2) gapLabel.textContent = 'closing in';
+    else if(ghostGap >= MAX_GAP) gapLabel.textContent = 'far off, safe';
+    else gapLabel.textContent = 'steady';
+  }
+
+  function renderTrackDom(){
+    const lane = document.getElementById('trackLane');
+    lane.innerHTML = '<div class="track-fill" id="trackFill"></div>';
+    const donutEl = document.createElement('div');
+    donutEl.className = 'track-icon donut-icon';
+    donutEl.style.left = '94%';
+    donutEl.innerHTML = donutSVG('idle');
+    lane.appendChild(donutEl);
+
+    const ghostEl = document.createElement('div');
+    ghostEl.id = 'trackGhost';
+    ghostEl.className = 'track-icon ghost-icon';
+    ghostEl.innerHTML = ghostSVG();
+    lane.appendChild(ghostEl);
+
+    const pacEl = document.createElement('div');
+    pacEl.id = 'trackPac';
+    pacEl.className = 'track-icon pac-icon';
+    pacEl.innerHTML = pacmanSVG();
+    lane.appendChild(pacEl);
+
+    const gulpEl = document.createElement('div');
+    gulpEl.id = 'gulpText';
+    gulpEl.className = 'gulp-text';
+    gulpEl.textContent = 'GULP!';
+    lane.appendChild(gulpEl);
+
+    updateTrack();
+  }
+
+  // ================= caught / victory =================
+  function playCaughtSequence(){
+    const ghostEl = document.getElementById('trackGhost');
+    const pacEl = document.getElementById('trackPac');
+    const lane = document.getElementById('trackLane');
+    const gulpEl = document.getElementById('gulpText');
+
+    const pacLeft = pacEl.style.left;
+    ghostEl.style.transition = 'left .22s ease-in';
+    ghostEl.style.left = pacLeft;
+
+    setTimeout(()=>{
+      lane.classList.add('shake');
+      ghostEl.classList.add('chomp');
+      pacEl.classList.add('eaten');
+      gulpEl.classList.add('show');
+      sfxGulp();
+    }, 240);
+
+    setTimeout(()=>{
+      lane.classList.remove('shake');
+      showCaught();
+    }, 1700);
+  }
+
+  function showCaught(){
+    document.getElementById('caughtIcons').innerHTML = ghostSVG();
+    document.getElementById('caughtTitle').textContent = "Gulp! Caught!";
+    document.getElementById('caughtSub').textContent = "The ghost swallowed Pac-Man after four wrong answers. Shake it off \u2014 you're heading back to the start of the rescue.";
+    document.getElementById('caughtModal').classList.add('show');
+  }
+
+  function resetRun(){
+    correctCount = 0;
+    wrongCount = 0;
+    ghostGap = START_GAP;
+    tier = 1;
+    tierStreak = 0;
+    bossPending = false;
+    endlessMode = false;
+    renderLives();
+
+    const ghostEl = document.getElementById('trackGhost');
+    const pacEl = document.getElementById('trackPac');
+    const gulpEl = document.getElementById('gulpText');
+    ghostEl.classList.remove('chomp');
+    pacEl.classList.remove('eaten');
+    gulpEl.classList.remove('show');
+    ghostEl.style.transition = '';
+
+    updateTrack();
+    document.getElementById('caughtModal').classList.remove('show');
+    nextQuestion();
+  }
+
+  function showVictory(){
+    saveBestIfBetter();
+    document.getElementById('finalScore').textContent = score;
+    const name = document.getElementById('nameInput').value.trim();
+    document.getElementById('donutVictory').innerHTML = donutSVG('happy');
+    document.getElementById('endHeadline').textContent = (name ? name + ", you" : "You") + " rescued Princess Donut!";
+    sfxVictory();
+
+    const caseWrap = document.getElementById('finalTrophyCase');
+    caseWrap.innerHTML = '';
+    TROPHIES.forEach((t,i)=>{
+      const slot = document.createElement('div');
+      slot.className = 'trophy-slot' + (unlockedTrophies.has(i) ? ' unlocked' : '');
+      slot.innerHTML = '<span class="icon">'+t.icon+'</span><span class="name">'+t.name+'</span>';
+      caseWrap.appendChild(slot);
+    });
+
+    const badgeWrap = document.getElementById('finalBadgeRow');
+    badgeWrap.innerHTML = '';
+    Object.keys(CATEGORY_BADGES).forEach(catKey=>{
+      const b = CATEGORY_BADGES[catKey];
+      const stat = categoryStats[catKey];
+      const earned = stat.correct >= 4;
+      const el = document.createElement('div');
+      el.className = 'badge' + (earned ? ' unlocked' : '');
+      el.innerHTML = '<span class="icon">'+creatureSVG(catKey, earned ? 'happy' : 'idle')+'</span><span class="name">'+b.name+'</span><span class="stat">'+stat.correct+' correct</span>';
+      badgeWrap.appendChild(el);
+    });
+
+    document.getElementById('submitRow').style.display = CONFIG.scriptUrl ? 'block' : 'none';
+    launchConfetti();
+    setScreen('endScreen');
+  }
+
+  document.getElementById('endlessBtn').addEventListener('click', ()=>{
+    endlessMode = true;
+    updateTrack();
+    setScreen('questScreen');
+    nextQuestion();
+  });
+
+  document.getElementById('submitScoreBtn').addEventListener('click', function(){
+    if(!CONFIG.scriptUrl) return;
+    const name = document.getElementById('nameInput').value.trim() || 'Anonymous';
+    this.disabled = true;
+    this.textContent = 'Submitting\u2026';
+    fetch(CONFIG.scriptUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ name, score, correctCount, timestamp: new Date().toISOString() })
+    }).then(()=>{
+      this.textContent = 'Submitted!';
+    }).catch(()=>{
+      this.textContent = 'Could not submit \u2014 try again later';
+      this.disabled = false;
+    });
+  });
+
+  // ================= screen switching =================
+  function setScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function startGame(){
+    ensureAudio();
+    sfxReady();
+    score = 0;
+    correctCount = 0;
+    wrongCount = 0;
+    ghostGap = START_GAP;
+    unlockedTrophies = new Set();
+    tier = 1; tierStreak = 0; bossPending = false; endlessMode = false;
+    tierQueues = { 1:[], 2:[], 3:[] };
+    fiftyCount = 0; shieldCount = 0; shieldActive = false; wagerCount = 0; wagerArmed = false;
+    categoryStats = {};
+    Object.keys(BANK).forEach(cat=>{ categoryStats[cat] = { correct:0, attempts:0 }; });
+
+    renderShelf();
+    renderLives();
+    setScreen('questScreen');
+    renderTrackDom();
+    nextQuestion();
+  }
+
+  document.getElementById('startBtn').addEventListener('click', startGame);
+  document.getElementById('playAgainBtn').addEventListener('click', startGame);
+  document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+  document.getElementById('tryAgainBtn').addEventListener('click', resetRun);
+
+  renderIntro();
+  renderShelf();
+  renderLives();
+})();
+</script>
+
+</body>
+</html>
